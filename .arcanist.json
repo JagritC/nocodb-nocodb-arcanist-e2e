@@ -1,0 +1,34 @@
+{
+  "appRuntime": {
+    "kind": "web",
+    "runner": "docker",
+    "entry": {
+      "type": "compose",
+      "files": ["docker-compose.arcanist.yml"],
+      "service": "web"
+    },
+    "url": {
+      "hostPort": 8080,
+      "path": "/api/v1/health"
+    },
+    "ready": {
+      "path": "/api/v1/health",
+      "timeoutSeconds": 1200
+    },
+    "open": {
+      "path": "/api/v1/health"
+    },
+    "composeEnv": {
+      "NC_ADMIN_EMAIL": "admin@example.com",
+      "NC_ADMIN_PASSWORD": "Password123!",
+      "NC_AUTH_JWT_SECRET": "arcanist-benchmark-jwt-secret",
+      "NC_DB": "pg://postgres:5432?u=postgres&p=password&d=root_db",
+      "NC_DISABLE_TELE": "true",
+      "NC_DASHBOARD_URL": "http://127.0.0.1:3000/dashboard",
+      "NC_REDIS_URL": "redis://redis:6379",
+      "NODE_ENV": "development",
+      "NUXT_PUBLIC_NC_BACKEND_URL": "http://127.0.0.1:8080",
+      "PORT": "8080"
+    }
+  }
+}
