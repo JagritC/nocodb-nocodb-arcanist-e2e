@@ -66,6 +66,7 @@ import { ViewsService } from '~/services/views.service';
 import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
+import { pgRegClassName } from '~/modules/jobs/jobs/export-import/pg-sequence.utils';
 
 @Injectable()
 export class ImportService {
@@ -379,13 +380,13 @@ export class ImportService {
                   dbDriver: await NcConnectionMgrv2.get(source),
                 });
                 const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
+                const tableName = pgRegClassName(
+                  sqlClient.knex,
+                  baseModel.getTnPath(table.table_name),
+                );
                 await sqlClient.raw(
-                  `SELECT setval(pg_get_serial_sequence('??', ?), ?);`,
-                  [
-                    baseModel.getTnPath(table.table_name),
-                    col.column_name,
-                    modelData.pgSerialLastVal,
-                  ],
+                  `SELECT setval(pg_get_serial_sequence(?, ?), ?);`,
+                  [tableName, col.column_name, modelData.pgSerialLastVal],
                 );
               }
             }
