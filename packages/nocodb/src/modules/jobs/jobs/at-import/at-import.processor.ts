@@ -54,6 +54,7 @@ import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 import Noco from '~/Noco';
 import { MetaTable } from '~/utils/globals';
 import { Audit } from '~/models';
+import { pgRegClassName } from '~/modules/jobs/jobs/export-import/pg-sequence.utils';
 
 const logger = new Logger('at-import');
 
@@ -2756,10 +2757,14 @@ export class AtImportProcessor {
                 viewId: null,
                 dbDriver: await NcConnectionMgrv2.get(source),
               });
+              const tableName = pgRegClassName(
+                baseModel.dbDriver,
+                baseModel.getTnPath(ncTblList.list[i].table_name),
+              );
               await baseModel.dbDriver.raw(
-                `SELECT setval(pg_get_serial_sequence('??', ?), ?);`,
+                `SELECT setval(pg_get_serial_sequence(?, ?), ?);`,
                 [
-                  baseModel.getTnPath(ncTblList.list[i].table_name),
+                  tableName,
                   'id',
                   baseModel.dbDriver.raw(`(SELECT MAX(id) FROM ??)`, [
                     baseModel.getTnPath(ncTblList.list[i].table_name),

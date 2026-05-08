@@ -55,6 +55,7 @@ import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 import { parseMetaProp } from '~/utils/modelUtils';
 import { getWidgetHandler } from '~/db/widgets';
 import { getQueriedColumns } from '~/helpers/dbHelpers';
+import { pgRegClassName } from '~/modules/jobs/jobs/export-import/pg-sequence.utils';
 
 @Injectable()
 export class ExportService {
@@ -260,15 +261,22 @@ export class ExportService {
                   dbDriver: await NcConnectionMgrv2.get(source),
                 });
                 const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
+                const tableName = pgRegClassName(
+                  sqlClient.knex,
+                  baseModel.getTnPath(model.table_name),
+                );
                 const seq = await sqlClient.raw(
-                  `SELECT pg_get_serial_sequence('??', ?) as seq;`,
-                  [baseModel.getTnPath(model.table_name), column.column_name],
+                  `SELECT pg_get_serial_sequence(?, ?) as seq;`,
+                  [tableName, column.column_name],
                 );
                 if (seq.rows.length > 0 && seq.rows[0].seq) {
                   const seqName = seq.rows[0].seq;
 
                   const res = await sqlClient.raw(
-                    `SELECT last_value as last FROM ${seqName};`,
+                    `SELECT last_value as last
+                    FROM pg_sequences
+                    WHERE format('%I.%I', schemaname, sequencename)::regclass = ?::regclass;`,
+                    [seqName],
                   );
 
                   if (res.rows.length > 0) {
