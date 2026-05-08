@@ -43,7 +43,7 @@ services:
     command:
       - sh
       - -lc
-      - pnpm bootstrap && ln -sfn /opt/arcanist-runtime/node_modules/exceljs /app/node_modules/exceljs && pnpm --filter=nocodb run watch:run
+      - pnpm bootstrap && git config --global --add safe.directory /app && git restore -- packages/nocodb-sdk/src/lib/Api.ts packages/nocodb/src/integrations/index.ts && ln -sfn /opt/arcanist-runtime/node_modules/exceljs /app/node_modules/exceljs && pnpm --filter=nocodb run watch:run
 
   postgres:
     image: postgres:16.6
